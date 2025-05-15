@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>アクションゲーム（ポップアップ豪華版＋ハイスコア＋星エフェクト）</title>
+  <title>アクションゲーム（完全版）</title>
   <style>
     canvas {
       background: skyblue;
@@ -79,7 +79,7 @@ function createStar(x, y) {
   });
 }
 
-// キー入力
+// キー入力（PC）
 document.addEventListener('keydown', (e) => {
   if (e.code === 'Space') {
     if (gameState === 'title') {
@@ -91,6 +91,19 @@ document.addEventListener('keydown', (e) => {
     }
   }
 });
+
+// タッチ操作対応（スマホ）
+canvas.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  if (gameState === 'title') {
+    startGame();
+  } else if (gameState === 'playing' && player.y >= 235) {
+    player.dy = player.jumpPower;
+    player.rotating = true;
+    createStar(player.x + player.width/2, player.y);
+  }
+});
+
 function startGame() {
   player.x = 100;
   player.y = 235;
@@ -179,6 +192,7 @@ function drawEnemies() {
     }
   }
 }
+
 function checkCollision(a, b) {
   return (
     a.x < b.x + b.width &&
@@ -199,8 +213,8 @@ function drawPopups() {
     ctx.fillText(popup.text, popup.x, popup.y);
     ctx.restore();
     popup.y -= 1;
-    popup.size += 0.5;  // 大きくなる
-    popup.opacity -= 0.02; // フェードアウト
+    popup.size += 0.5;
+    popup.opacity -= 0.02;
     popup.life--;
 
     if (popup.life <= 0) {
@@ -220,7 +234,7 @@ function drawStars() {
 
     star.x += star.dx;
     star.y += star.dy;
-    star.dy += 0.2; // 重力っぽい
+    star.dy += 0.2;
     star.life--;
 
     if (star.life <= 0) {
@@ -253,10 +267,12 @@ function updatePlayer() {
     player.rotation += 0.2;
   }
 }
+
 function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   drawBackground();
+  drawStars();
 
   ctx.fillStyle = 'black';
   ctx.font = '20px Arial';
@@ -264,15 +280,13 @@ function gameLoop() {
   ctx.fillText('スコア: ' + score, 10, 30);
   ctx.fillText('ハイスコア: ' + highScore, 10, 60);
 
-  drawStars();
-
   if (gameState === 'title') {
     ctx.fillStyle = 'black';
     ctx.font = '30px Arial';
     ctx.textAlign = 'center';
     ctx.fillText('アクションゲーム！', canvas.width / 2, 150);
     ctx.font = '20px Arial';
-    ctx.fillText('スペースキーでスタート！', canvas.width / 2, 200);
+    ctx.fillText('スペースキーまたはタッチでスタート！', canvas.width / 2, 200);
 
   } else if (gameState === 'playing' || gameState === 'waiting') {
     updatePlayer();
@@ -323,7 +337,6 @@ function gameLoop() {
         gameState = 'clear';
         resultMessageTimer = 120;
 
-        // ハイスコア更新
         if (score > highScore) {
           highScore = score;
           localStorage.setItem('highScore', highScore);
@@ -348,9 +361,9 @@ function gameLoop() {
     ctx.fillStyle = 'blue';
     ctx.font = '30px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('クリア！やったー！！！', canvas.width / 2, 120);
-    ctx.fillText('スコア: ' + score, canvas.width / 2, 170);
-    ctx.fillText('ハイスコア: ' + highScore, canvas.width / 2, 220);
+    ctx.fillText('クリア！やったー！！！', canvas.width / 2, 100);
+    ctx.fillText('スコア: ' + score, canvas.width / 2, 160);
+    ctx.fillText('ハイスコア: ' + highScore, canvas.width / 2, 210);
 
     resultMessageTimer--;
     if (resultMessageTimer <= 0) {
